@@ -40,6 +40,17 @@ python -m monitor_cast rtmp --no-window --width 1280 --fps 30   # เว็บ�
 คีย์ในหน้าต่าง: `f` เต็มจอ · `s` บันทึกภาพ · `q`/`Esc` ออก  
 บนหน้าเว็บ: ดับเบิลคลิกเพื่อเต็มจอ, `/snapshot.jpg` ดึงภาพนิ่ง, `/status` ดูสถานะ
 
+## Screen Mirroring ตรงจาก iPad (AirPlay)
+
+ไม่ต้องลงแอพบน iPad — iPad กับคอมต้องอยู่ Wi-Fi เดียวกัน
+
+1. ติดตั้ง UxPlay: `brew install uxplay` (Mac) · `sudo apt install uxplay` (Ubuntu/Debian ใหม่ ๆ) · Windows/อื่น ๆ ดู https://github.com/FDH2/UxPlay
+2. `python -m monitor_cast airplay --name MonitorCast`
+3. บน iPad: Control Center → **Screen Mirroring** → เลือก `MonitorCast`
+
+UxPlay จะเปิดหน้าต่างแสดงภาพเอง (เสถียรที่สุด) ถ้าต้องการให้ภาพเข้าเว็บ viewer ด้วย ใช้ `--bridge` (ทดลอง)
+ถ้า iPad ไม่เห็นชื่อ: เช็กไฟร์วอลล์ (UDP 5353 mDNS และพอร์ตของ UxPlay) และ Linux ต้องมี avahi-daemon
+
 ## ข้อจำกัดที่ควรรู้
 
 - iPadOS ไม่มี API ให้เว็บแอพ/Safari จับหน้าจอ (`getDisplayMedia` ใช้ไม่ได้) จึงต้องใช้แอพ broadcast, AirPlay หรือ USB

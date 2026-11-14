@@ -160,7 +160,8 @@ class AirPlaySource(Source):
     """ใช้ UxPlay (AirPlay receiver โอเพนซอร์ส) รับ Screen Mirroring จาก iPad
     แล้วส่งภาพกลับมาเป็น JPEG ผ่าน TCP ในเครื่อง  (ยังไม่ได้ทดสอบกับ iPad จริง)"""
 
-    def __init__(self, hub, airplay_name="MonitorCast"):
+    def __init__(self, hub, airplay_name="MonitorCast", bridge=False):
+        self.bridge = bridge
         self.name = "airplay"
         self.hint = f"iPad: Control Center > Screen Mirroring > {airplay_name}"
         self.airplay_name = airplay_name
@@ -174,10 +175,13 @@ class AirPlaySource(Source):
         if not shutil.which("uxplay"):
             sys.exit("ไม่พบ uxplay — ติดตั้ง: brew install uxplay | apt install uxplay "
                      "(Windows/อื่น ๆ: https://github.com/FDH2/UxPlay)")
-        threading.Thread(target=self._accept_loop, daemon=True).start()
+        if self.bridge:
+            threading.Thread(target=self._accept_loop, daemon=True).start()
         super().start()
 
     def command(self):
+        if not self.bridge:  # โหมดมาตรฐาน: UxPlay แสดงหน้าต่างเอง
+            return ["uxplay", "-n", self.airplay_name]
         sink = f"videoconvert ! jpegenc quality=80 ! tcpclientsink host=127.0.0.1 port={self.port}"
         return ["uxplay", "-n", self.airplay_name, "-vs", sink, "-as", "0"]
 

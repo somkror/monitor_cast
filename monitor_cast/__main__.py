@@ -27,6 +27,8 @@ def build_parser():
     s.add_argument("--port", type=int, default=9000)
     a = sub.add_parser("airplay", parents=[common], help="AirPlay Screen Mirroring ผ่าน UxPlay")
     a.add_argument("--name", default="MonitorCast", help="ชื่อที่ iPad จะเห็น")
+    a.add_argument("--bridge", action="store_true",
+                   help="ส่งภาพจาก UxPlay เข้าเว็บ viewer/หน้าต่างของเรา (ทดลอง) ค่าเริ่มต้น UxPlay เปิดหน้าต่างเอง")
     d = sub.add_parser("usb", parents=[common], help="iPad เสียบสาย USB (macOS เห็นเป็น capture device)")
     d.add_argument("--device", help='ชื่อ/ลำดับอุปกรณ์ เช่น "1" หรือ "iPad"')
     d.add_argument("--list", action="store_true", help="แสดงรายการอุปกรณ์แล้วออก")
@@ -50,7 +52,7 @@ def main():
     elif args.mode == "srt":
         src = sources.srt_source(hub, args.host, args.port, **kw)
     elif args.mode == "airplay":
-        src = sources.AirPlaySource(hub, args.name)
+        src = sources.AirPlaySource(hub, args.name, args.bridge)
     elif args.mode == "usb":
         if not args.device:
             raise SystemExit("ระบุ --device (ดูรายการด้วย: usb --list)")
@@ -59,7 +61,7 @@ def main():
         src = sources.url_source(hub, args.url, **kw)
 
     ip = local_ip()
-    if args.web_port:
+    if args.web_port and not (args.mode == "airplay" and not args.bridge):
         start_web(hub, "0.0.0.0", args.web_port)
         print(f"เว็บ viewer: http://{ip}:{args.web_port}/")
     if args.mode in ("rtmp", "srt"):
@@ -70,6 +72,9 @@ def main():
     src.start()
 
     try:
+        if args.mode == "airplay" and not args.bridge:
+            while True:
+                time.sleep(3600)
         if args.no_window:
             while True:
                 time.sleep(3600)
